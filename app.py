@@ -1,10 +1,3 @@
-# Set page configuration first
-st.set_page_config(
-    page_title="HR Employee Attrition Analysis",
-    page_icon="📊",
-    layout="wide"
-)
-
 # Import required libraries
 import streamlit as st
 import pandas as pd
@@ -14,6 +7,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+# Set page configuration first
+st.set_page_config(
+    page_title="HR Employee Attrition Analysis",
+    page_icon="📊",
+    layout="wide"
+)
 
 def main():
     # Sidebar navigation
