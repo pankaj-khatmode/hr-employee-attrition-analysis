@@ -45,8 +45,12 @@ elif page == "Data Analysis":
     # Load the dataset
     try:
         df = pd.read_csv("data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+        st.success("Dataset loaded successfully!")
     except FileNotFoundError:
         st.error("Dataset not found. Please make sure the dataset is in the 'data' directory.")
+        return
+    except Exception as e:
+        st.error(f"Error loading dataset: {str(e)}")
         return
     
     # Convert categorical variables
