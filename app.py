@@ -43,7 +43,11 @@ elif page == "Data Analysis":
     st.header("Data Analysis")
     
     # Load the dataset
-    df = pd.read_csv("C:\\Users\\Krynorcxy\\Downloads\\archive\\WA_Fn-UseC_-HR-Employee-Attrition.csv")
+    try:
+        df = pd.read_csv("data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+    except FileNotFoundError:
+        st.error("Dataset not found. Please make sure the dataset is in the 'data' directory.")
+        return
     
     # Convert categorical variables
     categorical_columns = ['BusinessTravel', 'Department', 'EducationField', 'Gender', 'JobRole', 'MaritalStatus', 'Over18', 'OverTime', 'Attrition']
