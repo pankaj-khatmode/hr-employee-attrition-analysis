@@ -1,16 +1,98 @@
-def main():
-    import streamlit as st
-    import pandas as pd
-    import numpy as np
-    from sklearn.model_selection import train_test_split
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, classification_report
-    from sklearn.preprocessing import LabelEncoder
-    import matplotlib.pyplot as plt
-    import seaborn as sns
+import streamlit as st
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, classification_report
+from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-    # Set page configuration
-    st.set_page_config(page_title="HR Employee Attrition Analysis", page_icon="📊")
+# Set page configuration
+st.set_page_config(page_title="HR Employee Attrition Analysis", page_icon="📊")
+
+def main():
+    # Sidebar navigation
+    page = st.sidebar.selectbox(
+        "Select Page",
+        ["Home", "Data Analysis", "Model Training", "Predictions", "About Dataset"]
+    )
+
+    if page == "Home":
+        st.title("HR Employee Attrition Analysis")
+        st.write("Welcome to the HR Employee Attrition Analysis Dashboard!")
+        st.write("This interactive dashboard helps analyze employee attrition patterns and predict future attrition.")
+        st.write("The goal is to predict which employees are likely to leave the company based on these features.")
+        st.write("Understanding employee attrition patterns can help organizations take proactive measures to retain valuable employees.")
+        st.write("Navigate through different sections using the sidebar to explore the data and build predictive models.")
+
+    elif page == "Data Analysis":
+        st.header("Data Analysis")
+        
+        # Load the dataset
+        try:
+            # Try different paths for the dataset
+            possible_paths = [
+                "data/WA_Fn-UseC_-HR-Employee-Attrition.csv",
+                "../data/WA_Fn-UseC_-HR-Employee-Attrition.csv",
+                "WA_Fn-UseC_-HR-Employee-Attrition.csv"
+            ]
+            
+            dataset_path = None
+            for path in possible_paths:
+                try:
+                    df = pd.read_csv(path)
+                    dataset_path = path
+                    break
+                except FileNotFoundError:
+                    continue
+                except Exception as e:
+                    st.error(f"Error loading dataset from {path}: {str(e)}")
+                    return
+            
+            if dataset_path:
+                st.success(f"Dataset loaded successfully from {dataset_path}")
+            else:
+                st.error("Dataset not found. Please upload the dataset file to the 'data' directory.")
+                return
+        except Exception as e:
+            st.error(f"Error loading dataset: {str(e)}")
+            return
+        
+        # Convert categorical variables
+        categorical_columns = ['BusinessTravel', 'Department', 'EducationField', 'Gender', 'JobRole', 'MaritalStatus', 'Over18', 'OverTime', 'Attrition']
+        for col in categorical_columns:
+            df[col] = df[col].astype('category').cat.codes
+        
+        # Show dataset preview
+        st.subheader("Dataset Preview")
+        st.dataframe(df.head())
+        
+        # Show basic statistics
+        st.subheader("Basic Statistics")
+        st.write(df.describe())
+        
+        # Show attrition distribution
+        st.subheader("Attrition Distribution")
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.countplot(data=df, x='Attrition')
+        plt.title('Distribution of Attrition')
+        st.pyplot(fig)
+        
+        # Show correlation heatmap
+        st.subheader("Correlation Heatmap")
+        numeric_df = df.select_dtypes(include=['int64', 'float64'])
+        corr = numeric_df.corr()
+        fig, ax = plt.subplots(figsize=(12, 8))
+        sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
+        plt.title('Correlation Matrix')
+        st.pyplot(fig)
+        
+        # Show top correlated features
+        st.subheader("Top Correlated Features with Attrition")
+        attrition_corr = corr['Attrition'].sort_values(ascending=False)
+        top_corr = attrition_corr[attrition_corr.abs() > 0.1]
+        st.bar_chart(top_corr)
 
     # Title and description
     st.title("HR Employee Attrition Analysis")
