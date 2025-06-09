@@ -3,13 +3,16 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, classification_report
-from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Set page configuration
-st.set_page_config(page_title="HR Employee Attrition Analysis", page_icon="📊")
+st.set_page_config(
+    page_title="HR Employee Attrition Analysis",
+    page_icon="📊",
+    layout="wide"
+)
 
 def main():
     # Sidebar navigation
@@ -17,6 +20,14 @@ def main():
         "Select Page",
         ["Home", "Data Analysis", "Model Training", "Predictions", "About Dataset"]
     )
+
+    if page == "Home":
+        st.title("HR Employee Attrition Analysis")
+        st.write("Welcome to the HR Employee Attrition Analysis Dashboard!")
+        st.write("This interactive dashboard helps analyze employee attrition patterns and predict future attrition.")
+        st.write("The goal is to predict which employees are likely to leave the company based on these features.")
+        st.write("Understanding employee attrition patterns can help organizations take proactive measures to retain valuable employees.")
+        st.write("Navigate through different sections using the sidebar to explore the data and build predictive models.")
 
     if page == "Home":
         st.title("HR Employee Attrition Analysis")
@@ -181,9 +192,32 @@ def main():
         
         # Load and preprocess data
         try:
-            df = pd.read_csv("data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
-        except FileNotFoundError:
-            st.error("Dataset not found. Please make sure the dataset is in the 'data' directory.")
+            # Try different paths for the dataset
+            possible_paths = [
+                "data/WA_Fn-UseC_-HR-Employee-Attrition.csv",
+                "../data/WA_Fn-UseC_-HR-Employee-Attrition.csv",
+                "WA_Fn-UseC_-HR-Employee-Attrition.csv"
+            ]
+            
+            dataset_path = None
+            for path in possible_paths:
+                try:
+                    df = pd.read_csv(path)
+                    dataset_path = path
+                    break
+                except FileNotFoundError:
+                    continue
+                except Exception as e:
+                    st.error(f"Error loading dataset from {path}: {str(e)}")
+                    return
+            
+            if dataset_path:
+                st.success(f"Dataset loaded successfully from {dataset_path}")
+            else:
+                st.error("Dataset not found. Please upload the dataset file to the 'data' directory.")
+                return
+        except Exception as e:
+            st.error(f"Error loading dataset: {str(e)}")
             return
         
         # Convert categorical variables
@@ -206,14 +240,17 @@ def main():
         years_at_company = st.number_input("Years at Company", min_value=0, max_value=40, value=2)
         
         # Create input data
-        input_df = pd.DataFrame({
-            'Age': [age],
-            'DistanceFromHome': [distance_from_home],
-            'Education': [education],
-            'JobLevel': [job_level],
-            'MonthlyIncome': [monthly_income],
-            'YearsAtCompany': [years_at_company]
-        })
+        input_data = {
+            'Age': age,
+            'DistanceFromHome': distance_from_home,
+            'Education': education,
+            'JobLevel': job_level,
+            'MonthlyIncome': monthly_income,
+            'YearsAtCompany': years_at_company
+        }
+        
+        # Convert to DataFrame
+        input_df = pd.DataFrame([input_data])
         
         # Train the model
         X = df[features]
@@ -224,6 +261,11 @@ def main():
         # Make prediction
         if st.button("Predict Attrition"):
             try:
+                # Preprocess input data
+                for col in categorical_columns[:-1]:  # Exclude Attrition
+                    if col in input_df.columns:
+                        input_df[col] = input_df[col].astype('category').cat.codes
+                
                 # Align input features with training features
                 input_features = input_df[features]
                 
